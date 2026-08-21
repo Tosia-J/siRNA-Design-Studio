@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ipynb_checkpoints/
+
+# transcriptome and sequence files - too large for git
+*.fasta
+*.fa
+*.fa.gz
+*.fasta.gz
+*.idx
+
+# output directories
+wyniki/
+results/
+validation/
+
+.DS_Store
+.vscode/
+.idea/
