@@ -8,12 +8,11 @@ their off-target risk assessed against a host transcriptome, their
 conservation across pathogen isolates, and every oligonucleotide form needed
 to order and test them at the bench.
 
-<!-- Uncomment once available:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/1336237502.svg)](https://doi.org/10.5281/zenodo.22061890)
 [![Tests](https://img.shields.io/badge/tests-110%20passing-brightgreen)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://YOUR-APP.streamlit.app)
--->
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://sirna-design-studio.streamlit.app)
+
 
 <!-- Add a screenshot:
 ![Interface](docs/screenshot.png)
@@ -553,7 +552,7 @@ are outside its scope.
              of small interfering RNA},
   version = {1.0.0},
   year    = {2026},
-  url     = {https://github.com/YOUR-USERNAME/sirna-design-studio}
+  url     = {https://github.com/Tosia-J/sirna-design-studio}
 }
 ```
 
