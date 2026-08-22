@@ -21,15 +21,15 @@ type: software
 authors:
   - family-names: Jarecka
     given-names: Antonina
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    orcid: "https://orcid.org/0009-0007-0804-4285"
     # affiliation: "Your institution"
     # email: your.email@example.org
 version: 1.0.0
 date-released: 2026-08-20
 license: MIT
-repository-code: "https://github.com/YOUR-USERNAME/sirna-design-studio"
-# url: "https://YOUR-APP.streamlit.app"
-# doi: 10.5281/zenodo.XXXXXXX
+repository-code: "https://github.com/Tosia-J/sirna-design-studio"
+url: "https://sirna-design-studio.streamlit.app"
+doi: 10.5281/zenodo.22061891
 keywords:
   - RNA interference
   - siRNA design
