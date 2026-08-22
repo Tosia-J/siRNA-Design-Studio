@@ -14,9 +14,9 @@ to order and test them at the bench.
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://sirna-design-studio.streamlit.app)
 
 
-<!-- Add a screenshot:
-![Interface](docs/screenshot.png)
--->
+
+![Interface](docs/interface.png)
+
 
 ---
 
