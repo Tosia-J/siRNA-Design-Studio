@@ -275,16 +275,71 @@ def generuj_kandydatow(mrna: str,
 
 
 def serie_zagniezdzone(kandydaci: List[Dict],
-                       tolerancja_poz: int = 3) -> List[Dict]:
+                       tolerancja_poz: int = 0,
+                       kotwica: str = 'koniec') -> List[Dict]:
     """
-    Znajduje zestawy kandydatow o roznych dlugosciach celujace w TO SAMO
-    miejsce -- czyli serie nadajace sie do porownania dlugosci.
+    Znajduje zestawy kandydatow o roznych dlugosciach celujace w to samo
+    miejsce - czyli serie nadajace sie do porownania dlugosci.
 
-    Bez tego porownanie 21 vs 22 vs 24 miesza dwie zmienne: dlugosc i
-    kontekst sekwencyjny. Serie zagniezdzone eliminuja te druga.
+    =========================================================================
+    KTORY KONIEC KOTWICZYC - I DLACZEGO TO NIE JEST OBOJETNE
+    =========================================================================
 
-    Zwraca liste serii, kazda jako slownik {dlugosc: kandydat}.
+    Nic prowadzaca jest odwrotna komplementarnoscia fragmentu mRNA. Wynika
+    z tego zaleznosc, ktora latwo przeoczyc:
+
+        pozycja 1 nici prowadzacej  <->  KONIEC fragmentu mRNA
+        region seed (pozycje 2-8)   <->  koniec fragmentu mRNA minus 1 do 7
+
+    Zatem to KONIEC okna na mRNA wyznacza 5'-koniec nici prowadzacej,
+    a wraz z nim caly region seed.
+
+    Konsekwencja: jesli serie zagniezdzone kotwiczy sie na POCZATKU okna,
+    warianty o roznych dlugosciach koncza sie w roznych miejscach, a przez
+    to maja ROZNE REGIONY SEED. Porownanie takich wariantow miesza dwie
+    zmienne - dlugosc i tozsamosc seedu - a seed jest najsilniejszym
+    pojedynczym wyznacznikiem zarowno aktywnosci na celu, jak i off-target.
+    Wynik takiego porownania jest nieinterpretowalny.
+
+    Przyklad na sekwencji GFP:
+
+        21 nt, poz. 480-500   seed UGAAGUU
+        22 nt, poz. 481-502   seed CUUGAAG    <- inny
+        24 nt, poz. 480-503   seed UCUUGAA    <- jeszcze inny
+
+    Kotwiczenie na KONCU daje to, o co chodzi:
+
+        21 nt, poz. 480-500   seed UGAAGUU
+        24 nt, poz. 477-500   seed UGAAGUU    <- ten sam
+
+    Warianty roznia sie wtedy wylacznie przedluzeniem na 3'-koncu nici
+    prowadzacej, czyli w regionie, ktory wspomaga wiazanie, lecz nie
+    warunkuje rozpoznania celu. To jest jedyny uklad, w ktorym dlugosc
+    pozostaje jedyna zmienna.
+
+    =========================================================================
+
+    kotwica : 'koniec'   - ten sam koniec okna na mRNA  [ZALECANE]
+                            -> identyczny seed, identyczny 5'-koniec nici
+                               prowadzacej, roznica wylacznie w przedluzeniu 3'
+              'poczatek' - ten sam poczatek okna
+                            -> rozne seedy; zachowane wylacznie dla zgodnosci
+                               z wczesniejsza wersja, NIE do porownania dlugosci
+
+    tolerancja_poz : dopuszczalna roznica pozycji kotwiczacej. Przy kotwicy
+              na koncu wartosc 0 jest wlasciwa i osiagalna - okna o roznej
+              dlugosci moga konczyc sie dokladnie w tym samym miejscu.
+
+    Zwraca liste serii; kazda seria to slownik {dlugosc: kandydat},
+    uzupelniony kluczami '_seed_zgodny', '_seed', '_kotwica'
+    i '_poz_kotwicy'.
     """
+    if kotwica not in ('koniec', 'poczatek'):
+        raise ValueError("kotwica musi byc 'koniec' albo 'poczatek'")
+
+    klucz_poz = ('poz_end_1based' if kotwica == 'koniec'
+                 else 'poz_start_1based')
+
     wg_dlugosci: Dict[int, List[Dict]] = {}
     for k in kandydaci:
         wg_dlugosci.setdefault(k['dlugosc'], []).append(k)
@@ -299,17 +354,28 @@ def serie_zagniezdzone(kandydaci: List[Dict],
         seria = {dlugosci[0]: k0}
         kompletna = True
         for L in dlugosci[1:]:
-            dopasowany = None
+            najlepszy, najmniejsza_roznica = None, None
             for k in wg_dlugosci[L]:
-                if abs(k['poz_start_1based'] - k0['poz_start_1based']) <= tolerancja_poz:
-                    dopasowany = k
-                    break
-            if dopasowany is None:
+                roznica = abs(k[klucz_poz] - k0[klucz_poz])
+                if roznica <= tolerancja_poz:
+                    if (najmniejsza_roznica is None
+                            or roznica < najmniejsza_roznica):
+                        najlepszy, najmniejsza_roznica = k, roznica
+            if najlepszy is None:
                 kompletna = False
                 break
-            seria[L] = dopasowany
-        if kompletna:
-            serie.append(seria)
+            seria[L] = najlepszy
+        if not kompletna:
+            continue
+
+        seedy = {seria[L]['seed_2_8'] for L in seria if isinstance(L, int)}
+        seria['_seed_zgodny'] = (len(seedy) == 1)
+        seria['_seed'] = next(iter(seedy)) if len(seedy) == 1 else None
+        seria['_kotwica'] = kotwica
+        seria['_poz_kotwicy'] = k0[klucz_poz]
+        serie.append(seria)
+
+    serie.sort(key=lambda s: (not s['_seed_zgodny'], s['_poz_kotwicy']))
     return serie
 
 
@@ -327,11 +393,14 @@ if __name__ == '__main__':
     kand = generuj_kandydatow(GFP)
     print(f'\nLacznie {len(kand)} kandydatow.\n')
 
-    serie = serie_zagniezdzone(kand)
-    print(f'Znaleziono {len(serie)} serii zagniezdzonych '
-          f'(to samo miejsce, rozne dlugosci):')
-    for s in serie:
-        poz = s[21]['poz_start_1based']
-        print(f'  poz ~{poz}: ' + ', '.join(
-            f'{L}nt(GC {s[L]["gc_proc"]}%, asym {s[L]["asymetria"]:+.2f})'
-            for L in sorted(s)))
+    for kotw in ('koniec', 'poczatek'):
+        serie = serie_zagniezdzone(kand, kotwica=kotw)
+        zgodne = sum(1 for x in serie if x['_seed_zgodny'])
+        print(f'\nKotwica na {kotw}: {len(serie)} serii, '
+              f'{zgodne} z identycznym seedem')
+        for x in serie[:4]:
+            dl = [L for L in x if isinstance(L, int)]
+            znacznik = 'seed OK  ' if x['_seed_zgodny'] else 'seed ROZNY'
+            print(f'  {znacznik} kotwica {x["_poz_kotwicy"]}: ' + ', '.join(
+                f'{L}nt@{x[L]["poz_start_1based"]}-{x[L]["poz_end_1based"]}'
+                f'/{x[L]["seed_2_8"]}' for L in sorted(dl)))
