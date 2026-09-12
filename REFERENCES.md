@@ -6,10 +6,6 @@ Bibliography for **Design of siRNA Targeting Conserved Regions of the ToBRFV Gen
 Full text, source code and the design pipeline: <https://github.com/Tosia-J/siRNA-Design-Studio>
 Interactive tool: <https://sirna-design-studio.streamlit.app>
 
-94 entries, alphabetical by first author.
-
-–-
-
 - Abrahamian, P., Cai, W., Nunziata, S. O., Ling, K.-S., Jaiswal, N., Mavrodieva, V., Rivera, Y., & Nakhla, M. K. (2022). Comparative analysis of Tomato brown rugose fruit virus isolates shows limited genetic diversity. Viruses, 14(12), 2816. https://doi.org/10.3390/v14122816
 
 - Agarwal, S., & Mangrauthia, S. K. (2013). Advances, challenges and prospects in small RNA mediated approaches of virus resistance in plants. Journal of Genomes and Exomes, 2013(2), 43–62. https://doi.org/10.4137/JGE.S11938
