@@ -487,15 +487,7 @@ profil_nazwa = st.sidebar.selectbox(
     index=_profile_keys.index(DOMYSLNY) if DOMYSLNY in _profile_keys else 0,
     format_func=lambda k: f"{k} — {hosts.PROFILE[k].sciezka}",
 )
-profil_bazowy = hosts.get_profile(profil_nazwa)
-
-tryb = st.sidebar.radio(
-    'Delivery route', hosts.TRYBY, index=0,
-    help='transgenic — the plant dices the precursor; '
-         'synthetic — a pre-formed duplex is delivered directly',
-)
-profil = hosts.profil_dla_trybu(profil_bazowy, tryb)
-st.sidebar.caption(f"Lengths available: {', '.join(str(d) for d in profil.dlugosci)} nt")
+profil = hosts.get_profile(profil_nazwa)
 
 st.sidebar.markdown(
     f'<span class="plakietka p-fiolet">GC {profil.gc_min:.0f}–{profil.gc_max:.0f}%</span>'
@@ -539,22 +531,24 @@ else:
                        'profile.')
 st.sidebar.divider()
 
-dozwolone = list(hosts.dozwolone_dlugosci(profil_bazowy, tryb))
-
-if zaawansowany:
-    opcje = sorted(set(dozwolone) | {21, 22, 23, 24})
-else:
-    opcje = dozwolone
+proponowane = list(hosts.dlugosci_proponowane(profil))
 
 dlugosci = st.sidebar.multiselect(
-    'siRNA lengths (nt)', opcje, default=dozwolone,
-    help='\n\n'.join(
-        f'**{d} nt** — {profil_bazowy.opis_dlugosci.get(d, "no annotation")}'
-        for d in opcje))
+    'siRNA lengths (nt)', proponowane, default=proponowane,
+    format_func=lambda d: f'{d} nt — {hosts.etykieta_dlugosci(profil, d)}',
+    help='All selected lengths are generated in one run, anchored at a shared '
+         'window end, so variants of the same target site share a seed.')
 
 if not dlugosci:
     st.sidebar.error('Select at least one length.')
     st.stop()
+
+_synt = [d for d in dlugosci
+         if hosts.drogi_dla_dlugosci(profil, d) == ('synthetic',)]
+if _synt:
+    st.sidebar.info(
+        f"{', '.join(str(d) for d in _synt)} nt cannot be produced by Dicer "
+        "from a hairpin cassette — valid only as a pre-formed synthetic duplex.")
 st.sidebar.divider()
 if not design.VIENNA_DOSTEPNE:
     st.sidebar.error('ViennaRNA unavailable - reduced mode.')
