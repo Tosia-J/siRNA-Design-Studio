@@ -194,7 +194,7 @@ PROFILE: Dict[str, HostProfile] = {
         motywy_raportowane=MOTYWY_IMMUNO_SSAKI,
         min_asymetria=0.3,
         max_mfe_guide=-3.0,
-        dlugosci=(21, 22),
+        dlugosci=(21, 22, 24),
         opis_dlugosci={
             21: 'DCL4 - PTGS, main antiviral pathway, mRNA cleavage',
             22: 'DCL2 - triggers transitivity (RDR6), secondary siRNA, '
