@@ -230,7 +230,7 @@ PROFILE: Dict[str, HostProfile] = {
         motywy_raportowane=MOTYWY_IMMUNO_SSAKI,
         min_asymetria=0.3,
         max_mfe_guide=-3.0,
-        dlugosci=(24,),
+        dlugosci=(21, 22, 24),
         opis_dlugosci={
             21: 'AGO6, non-canonical RdDM from TE-derived siRNA '
                 '(McCue et al. 2015) - synthetic delivery only',
@@ -243,7 +243,7 @@ PROFILE: Dict[str, HostProfile] = {
         },
         sciezka='RdDM',
         argonaute=('AGO4', 'AGO6'),
-        dlugosci_tylko_syntetyczne=(21, 22, 23),
+        dlugosci_tylko_syntetyczne=(23),
         nawis_guide_3prim=2,
         nawis_passenger_3prim=1,
         wymog_5prim_uzasadniony=False,
