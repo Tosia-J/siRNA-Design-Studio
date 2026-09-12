@@ -487,14 +487,14 @@ profil_nazwa = st.sidebar.selectbox(
     index=_profile_keys.index(DOMYSLNY) if DOMYSLNY in _profile_keys else 0,
     format_func=lambda k: f"{k} — {hosts.PROFILE[k].sciezka}",
 )
-profil = hosts.get_profile(profil_nazwa)
+profil_bazowy = hosts.get_profile(profil_nazwa)
 
 tryb = st.sidebar.radio(
     'Delivery route', hosts.TRYBY, index=0,
     help='transgenic — the plant dices the precursor; '
          'synthetic — a pre-formed duplex is delivered directly',
 )
-profil = hosts.profil_dla_trybu(profil, tryb)
+profil = hosts.profil_dla_trybu(profil_bazowy, tryb)
 st.sidebar.caption(f"Lengths available: {', '.join(str(d) for d in profil.dlugosci)} nt")
 
 st.sidebar.markdown(
@@ -504,9 +504,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True)
 st.sidebar.caption(profil.opis)
 
-dlugosci = st.sidebar.multiselect(
-    'siRNA lengths (nt)', [19, 20, 21, 22, 23, 24],
-    default=list(profil.dlugosci))
 
 st.sidebar.divider()
 
@@ -540,7 +537,24 @@ else:
     wagi = None
     st.sidebar.caption('Thresholds set automatically from the organism '
                        'profile.')
+st.sidebar.divider()
 
+dozwolone = list(hosts.dozwolone_dlugosci(profil_bazowy, tryb))
+
+if zaawansowany:
+    opcje = sorted(set(dozwolone) | {21, 22, 23, 24})
+else:
+    opcje = dozwolone
+
+dlugosci = st.sidebar.multiselect(
+    'siRNA lengths (nt)', opcje, default=dozwolone,
+    help='\n\n'.join(
+        f'**{d} nt** — {profil_bazowy.opis_dlugosci.get(d, "no annotation")}'
+        for d in opcje))
+
+if not dlugosci:
+    st.sidebar.error('Select at least one length.')
+    st.stop()
 st.sidebar.divider()
 if not design.VIENNA_DOSTEPNE:
     st.sidebar.error('ViennaRNA unavailable - reduced mode.')
