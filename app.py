@@ -478,10 +478,24 @@ def zapisz_tymczasowo(plik) -> str:
 
 st.sidebar.markdown('### Settings')
 
+DOMYSLNY = 'plant_ptgs'
+_profile_keys = sorted(hosts.PROFILE)
+
 profil_nazwa = st.sidebar.selectbox(
-    'Target organism', sorted(hosts.PROFILE),
-    index=sorted(hosts.PROFILE).index('plant'))
+    'Target organism',
+    _profile_keys,
+    index=_profile_keys.index(DOMYSLNY) if DOMYSLNY in _profile_keys else 0,
+    format_func=lambda k: f"{k} — {hosts.PROFILE[k].sciezka}",
+)
 profil = hosts.get_profile(profil_nazwa)
+
+tryb = st.sidebar.radio(
+    'Delivery route', hosts.TRYBY, index=0,
+    help='transgenic — the plant dices the precursor; '
+         'synthetic — a pre-formed duplex is delivered directly',
+)
+profil = hosts.profil_dla_trybu(profil, tryb)
+st.sidebar.caption(f"Lengths available: {', '.join(str(d) for d in profil.dlugosci)} nt")
 
 st.sidebar.markdown(
     f'<span class="plakietka p-fiolet">GC {profil.gc_min:.0f}–{profil.gc_max:.0f}%</span>'
