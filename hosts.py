@@ -40,12 +40,6 @@ dotycza trzech obszarow:
    dupleksu.
    Ssaki: szerszy, 30-64% (Reynolds i wsp. 2004, Ui-Tei i wsp. 2004).
 
------------------------------------------------------------------------------
-CO SIE ZMIENILO W TEJ WERSJI (rozdzial profilu roslinnego)
------------------------------------------------------------------------------
-
-Dotychczasowy profil 'plant' mial jeden zestaw regul dla calej rosliny.
-Jest to uproszczenie, ktore zaciera roznice miedzy dwoma odrebnymi szlakami.
 
 Wang i wsp. 2023 (Genes Dev 37:103-118) pokazali w ukladzie rekonstytuowanym,
 ze AGO4 - efektor szlaku RdDM - NIE MA ani wymagania dlugosci, ani preferencji
@@ -411,7 +405,31 @@ def lista_profili() -> str:
         linie.append('aliases: ' + ', '.join(f'{a} -> {t}' for a, t in ALIASY.items()))
     return '\n'.join(linie)
 
+def drogi_dla_dlugosci(profil: HostProfile, dlugosc: int) -> Tuple[str, ...]:
+    """Ktorymi drogami dana dlugosc jest osiagalna w tym profilu.
 
+    Dlugosc wytwarzana przez Dicera jest osiagalna obiema drogami.
+    Dlugosc spoza repertuaru Dicera - wylacznie jako gotowy dupleks.
+    """
+    if dlugosc in profil.dlugosci:
+        return ('transgenic', 'synthetic')
+    if dlugosc in profil.dlugosci_tylko_syntetyczne:
+        return ('synthetic',)
+    return ()
+
+
+def dlugosci_proponowane(profil: HostProfile) -> Tuple[int, ...]:
+    """Pelny zestaw dlugosci majacych sens biologiczny w tym profilu."""
+    return tuple(sorted(set(profil.dlugosci) | set(profil.dlugosci_tylko_syntetyczne)))
+
+
+def etykieta_dlugosci(profil: HostProfile, dlugosc: int) -> str:
+    d = drogi_dla_dlugosci(profil, dlugosc)
+    if d == ('transgenic', 'synthetic'):
+        return 'both routes'
+    if d == ('synthetic',):
+        return 'synthetic duplex only'
+    return 'outside this profile'
 if __name__ == '__main__':
     print(lista_profili())
     print()
